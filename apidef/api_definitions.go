@@ -352,6 +352,7 @@ type APIDefinition struct {
 	Tags              []string               `bson:"tags" json:"tags"`
 	EnableContextVars bool                   `bson:"enable_context_vars" json:"enable_context_vars"`
 	ConfigData        map[string]interface{} `bson:"config_data" json:"config_data"`
+	TagHeaders        map[string]interface{} `bson:"tag_headers" json:"tag_headers"`
 }
 
 type BundleManifest struct {
