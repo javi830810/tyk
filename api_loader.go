@@ -301,6 +301,7 @@ func processSpec(spec *APISpec, apisByListen map[string]int,
 		mwAppendEnabled(&chainArray, &RateCheckMW{BaseMiddleware: baseMid})
 		mwAppendEnabled(&chainArray, &IPWhiteListMiddleware{BaseMiddleware: baseMid})
 		mwAppendEnabled(&chainArray, &OrganizationMonitor{BaseMiddleware: baseMid})
+		mwAppendEnabled(&chainArray, &RateLimitForAPI{BaseMiddleware: baseMid})
 		mwAppendEnabled(&chainArray, &MiddlewareContextVars{BaseMiddleware: baseMid})
 		mwAppendEnabled(&chainArray, &VersionCheck{BaseMiddleware: baseMid})
 		mwAppendEnabled(&chainArray, &RequestSizeLimitMiddleware{baseMid})
@@ -453,6 +454,7 @@ func processSpec(spec *APISpec, apisByListen map[string]int,
 
 		mwAppendEnabled(&chainArray, &KeyExpired{baseMid})
 		mwAppendEnabled(&chainArray, &AccessRightsCheck{baseMid})
+		mwAppendEnabled(&chainArray, &RateLimitForAPI{BaseMiddleware: baseMid})
 		mwAppendEnabled(&chainArray, &RateLimitAndQuotaCheck{baseMid})
 		mwAppendEnabled(&chainArray, &GranularAccessMiddleware{baseMid})
 		mwAppendEnabled(&chainArray, &TransformMiddleware{baseMid})
