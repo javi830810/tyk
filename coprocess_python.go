@@ -157,7 +157,7 @@ static struct CoProcessMessage* Python_DispatchHook(struct CoProcessMessage* obj
 
 	Py_XDECREF(requestPyObject);
 	Py_XDECREF(args);
-	Py_XDECREF(result);
+	//Py_XDECREF(result);
 
 	PyGILState_Release(gilState);
 	return outputObject;

@@ -66,7 +66,7 @@ func (c *CoProcessor) Dispatch(object *coprocess.Object) (newObject *coprocess.O
 
 	C.free(unsafe.Pointer(CObjectStr))
 	C.free(unsafe.Pointer(objectPtr))
-	//C.free(unsafe.Pointer(newObjectPtr))
+	C.free(unsafe.Pointer(newObjectPtr))
 
 	return newObject, err
 }
