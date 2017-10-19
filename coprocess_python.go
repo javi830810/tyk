@@ -63,6 +63,7 @@ static int Python_LoadDispatcher() {
 
 static void Python_ReloadDispatcher() {
 	gilState = PyGILState_Ensure();
+
 	PyObject *hook_name = PyUnicode_FromString(dispatcher_reload);
 	if( dispatcher_reload_hook == NULL ) {
 		dispatcher_reload_hook = PyObject_GetAttr(dispatcher, hook_name);
@@ -76,6 +77,7 @@ static void Python_ReloadDispatcher() {
 
 static void Python_HandleMiddlewareCache(char* bundle_path) {
   gilState = PyGILState_Ensure();
+
 	if( PyCallable_Check(dispatcher_load_bundle) ) {
 		PyObject* load_bundle_args = PyTuple_Pack( 1, PyUnicode_FromString(bundle_path) );
 		PyObject_CallObject( dispatcher_load_bundle, load_bundle_args );
@@ -85,6 +87,7 @@ static void Python_HandleMiddlewareCache(char* bundle_path) {
 
 static int Python_NewDispatcher(char* middleware_path, char* event_handler_path, char* bundle_paths) {
 	PyThreadState*  mainThreadState = PyEval_SaveThread();
+
 	gilState = PyGILState_Ensure();
 	if( PyCallable_Check(dispatcher_class) ) {
 		dispatcher_args = PyTuple_Pack( 3, PyUnicode_FromString(middleware_path), PyUnicode_FromString(event_handler_path), PyUnicode_FromString(bundle_paths) );
@@ -127,32 +130,38 @@ static void Python_SetEnv(char* python_path) {
 static struct CoProcessMessage* Python_DispatchHook(struct CoProcessMessage* object) {
 	struct CoProcessMessage* outputObject = malloc(sizeof *outputObject);
 
-	if( object->p_data == NULL ) {
-		return outputObject;
-	} else {
 
-		gilState = PyGILState_Ensure();
-		PyObject *args = PyTuple_Pack( 1, PyBytes_FromStringAndSize(object->p_data, object->length) );
-
-		PyObject *result = PyObject_CallObject( dispatcher_hook, args );
-
-		if( result == NULL ) {
-			PyErr_Print();
-		} else {
-			PyObject* new_object_msg_item = PyTuple_GetItem( result, 0 );
-			char* output = PyBytes_AsString(new_object_msg_item);
-
-			PyObject* new_object_msg_length = PyTuple_GetItem( result, 1 );
-			int msg_length = PyLong_AsLong(new_object_msg_length);
-
-			outputObject->p_data = (void*)output;
-			outputObject->length = msg_length;
-		}
-
-		PyGILState_Release(gilState);
-
+	if (object->p_data == NULL) {
 		return outputObject;
 	}
+
+	gilState = PyGILState_Ensure();
+
+	PyObject *requestPyObject = PyBytes_FromStringAndSize(object->p_data, object->length);
+	PyObject *args = PyTuple_Pack( 1,  requestPyObject);
+
+	PyObject *result = PyObject_CallObject( dispatcher_hook, args );
+
+	if( result == NULL ) {
+		PyErr_Print();
+	} else {
+		PyObject* new_object_msg_item = PyTuple_GetItem( result, 0 );
+		char* output = PyBytes_AsString(new_object_msg_item);
+
+		PyObject* new_object_msg_length = PyTuple_GetItem( result, 1 );
+		int msg_length = PyLong_AsLong(new_object_msg_length);
+
+		outputObject->p_data = (void*)output;
+		outputObject->length = msg_length;
+	}
+
+	Py_XDECREF(requestPyObject);
+	Py_XDECREF(args);
+	//Py_XDECREF(result);
+
+	PyGILState_Release(gilState);
+	return outputObject;
+
 }
 
 static void Python_DispatchEvent(char* event_json) {
